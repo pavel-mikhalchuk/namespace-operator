@@ -76,4 +76,5 @@ tags
 .history
 ### Pavel Mikhalchuk ###
 /scripts
+.DS_Store
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode

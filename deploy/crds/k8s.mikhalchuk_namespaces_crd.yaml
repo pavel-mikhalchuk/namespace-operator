@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: namespaces.mikhalchuk
+  name: namespaces.k8s.mikhalchuk
 spec:
-  group: mikhalchuk
+  group: k8s.mikhalchuk
   names:
     kind: Namespace
     listKind: NamespaceList

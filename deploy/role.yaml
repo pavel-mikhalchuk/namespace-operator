@@ -67,7 +67,7 @@ rules:
   verbs:
   - get
 - apiGroups:
-  - mikhalchuk
+  - k8s.mikhalchuk
   resources:
   - '*'
   verbs:

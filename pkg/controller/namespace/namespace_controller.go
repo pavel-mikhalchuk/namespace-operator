@@ -3,7 +3,7 @@ package namespace
 import (
 	"context"
 
-	mikhalchukv1alpha1 "github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/mikhalchuk/v1alpha1"
+	k8sv1alpha1 "github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/k8s/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +46,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource Namespace
-	err = c.Watch(&source.Kind{Type: &mikhalchukv1alpha1.Namespace{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &k8sv1alpha1.Namespace{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to secondary resource Pods and requeue the owner Namespace
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &mikhalchukv1alpha1.Namespace{},
+		OwnerType:    &k8sv1alpha1.Namespace{},
 	})
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 	reqLogger.Info("Reconciling Namespace")
 
 	// Fetch the Namespace instance
-	instance := &mikhalchukv1alpha1.Namespace{}
+	instance := &k8sv1alpha1.Namespace{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -100,39 +100,54 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 		return reconcile.Result{}, err
 	}
 
-	// Create new K8S Namesapce
-	ns := newK8SNamespace(instance)
+	// Define a new Pod object
+	pod := newPodForCR(instance)
 
 	// Set Namespace instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, ns, r.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// Check if this Namesapce already exists
-	found := &corev1.Namespace{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: ns.Name, Namespace: ns.Namespace}, found)
+	// Check if this Pod already exists
+	found := &corev1.Pod{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new Namespace", "Namespace.Name", ns.Name)
-		err = r.client.Create(context.TODO(), ns)
+		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+		err = r.client.Create(context.TODO(), pod)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 
-		// Namesapce created successfully - don't requeue
+		// Pod created successfully - don't requeue
 		return reconcile.Result{}, nil
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// Namesapce already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Namesapce already exists", "Namesapce.Name", found.Name)
+	// Pod already exists - don't requeue
+	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
 	return reconcile.Result{}, nil
 }
 
-func newK8SNamespace(cr *mikhalchukv1alpha1.Namespace) *corev1.Namespace {
-	return &corev1.Namespace{
+// newPodForCR returns a busybox pod with the same name/namespace as the cr
+func newPodForCR(cr *k8sv1alpha1.Namespace) *corev1.Pod {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: cr.Name,
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "busybox",
+					Image:   "busybox",
+					Command: []string{"sleep", "3600"},
+				},
+			},
 		},
 	}
 }

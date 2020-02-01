@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/mikhalchuk/v1alpha1"
+	"github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/k8s/v1alpha1"
 )
 
 func init() {
