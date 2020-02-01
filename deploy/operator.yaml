@@ -15,8 +15,7 @@ spec:
       serviceAccountName: namespace-operator
       containers:
         - name: namespace-operator
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: pavelmikhalchuk/namespace-operator:latest
           command:
           - namespace-operator
           imagePullPolicy: Always
