@@ -1,0 +1,7 @@
+apiVersion: mikhalchuk/v1alpha1
+kind: Namespace
+metadata:
+  name: example-namespace
+spec:
+  # Add fields here
+  size: 3
