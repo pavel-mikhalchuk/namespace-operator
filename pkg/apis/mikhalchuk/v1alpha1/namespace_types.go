@@ -25,7 +25,7 @@ type NamespaceStatus struct {
 
 // Namespace is the Schema for the namespaces API
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=namespaces,scope=Cluster
+// +kubebuilder:resource:path=namespaces,scope=Namespaced
 type Namespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

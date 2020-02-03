@@ -3,7 +3,7 @@ package namespace
 import (
 	"context"
 
-	k8sv1alpha1 "github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/k8s/v1alpha1"
+	mikhalchukv1alpha1 "github.com/pavel-mikhalchuk/namespace-operator/pkg/apis/mikhalchuk/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +46,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource Namespace
-	err = c.Watch(&source.Kind{Type: &k8sv1alpha1.Namespace{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &mikhalchukv1alpha1.Namespace{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to secondary resource Pods and requeue the owner Namespace
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &k8sv1alpha1.Namespace{},
+		OwnerType:    &mikhalchukv1alpha1.Namespace{},
 	})
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 	reqLogger.Info("Reconciling Namespace")
 
 	// Fetch the Namespace instance
-	instance := &k8sv1alpha1.Namespace{}
+	instance := &mikhalchukv1alpha1.Namespace{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -129,7 +129,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 	return reconcile.Result{}, nil
 }
 
-func newK8SNamespace(cr *k8sv1alpha1.Namespace) *corev1.Namespace {
+func newK8SNamespace(cr *mikhalchukv1alpha1.Namespace) *corev1.Namespace {
 	return &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: cr.Name,

@@ -1,4 +1,4 @@
-apiVersion: k8s.mikhalchuk/v1alpha1
+apiVersion: mikhalchuk.k8s/v1alpha1
 kind: Namespace
 metadata:
   name: example-namespace
